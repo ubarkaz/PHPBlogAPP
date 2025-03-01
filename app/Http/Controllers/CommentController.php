@@ -23,12 +23,12 @@ class CommentController extends Controller
             'commentable_type' => 'required|string|in:App\Models\Blog,App\Models\User',
         ]);
 
-        // Check if the commentable_id exists for the given commentable_type
+    // Check if the commentable_id exists for the given commentable_type
         $commentableModel = $request->input('commentable_type');
         $commentableId = $request->input('commentable_id');
         if (!$commentableModel::find($commentableId)) {
-            return response()->json(['message' => 'Commentable resource not found'], 404);
-        }
+        return response()->json(['message' => 'Commentable resource not found'], 404);
+    }
 
         $comment = Comment::create($request->all());
 
