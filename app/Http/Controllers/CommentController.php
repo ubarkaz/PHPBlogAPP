@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Comment;
 use Illuminate\Http\Request;
+use App\Jobs\SendCommentNotification;
 
 class CommentController extends Controller
 {
@@ -23,7 +24,7 @@ class CommentController extends Controller
             'commentable_type' => 'required|string|in:App\Models\Blog,App\Models\User',
         ]);
 
-    // Check if the commentable_id exists for the given commentable_type
+    // Check if the commentable_id exists for the given commentable_type 
         $commentableModel = $request->input('commentable_type');
         $commentableId = $request->input('commentable_id');
         if (!$commentableModel::find($commentableId)) {
@@ -31,6 +32,9 @@ class CommentController extends Controller
     }
 
         $comment = Comment::create($request->all());
+
+        // Dispatch the email notification job
+        SendCommentNotification::dispatch($comment);
 
         return response()->json($comment, 201);
     }
