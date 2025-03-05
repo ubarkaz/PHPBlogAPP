@@ -8,3 +8,14 @@ use Illuminate\Support\Facades\Route;
 Route::apiResource('users', UserController::class);
 Route::apiResource('blogs', BlogController::class);
 Route::apiResource('comments', CommentController::class);
+
+//Restore routes for soft deleted records
+Route::patch('users/{id}/restore', [UserController::class, 'restore']);
+Route::patch('blogs/{id}/restore', [BlogController::class, 'restore']);
+Route::patch('comments/{id}/restore', [CommentController::class, 'restore']);
+
+
+//Permanent delete routes for users
+Route::delete('users/{id}/force-delete', [UserController::class, 'forceDelete']);
+Route::delete('blogs/{id}/force-delete', [BlogController::class, 'forceDelete']);
+Route::delete('comments/{id}/force-delete', [CommentController::class, 'forceDelete']);

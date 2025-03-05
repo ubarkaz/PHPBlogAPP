@@ -9,10 +9,12 @@ use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
-    // Get all users
+    // Get users
     public function index()
     {
-        return response()->json(User::all(), 200);
+        //return response()->json(User::all(), 200); only retrieves active users in postman
+        //return response()->json(User::onlyTrashed()->get(), 200); only retrieves soft-deleted users in postman
+        return response()->json(User::withTrashed()->get(), 200); //retrieves active and soft deleted users in postman
     }
 
     // Create a new user
@@ -66,7 +68,7 @@ class UserController extends Controller
         return response()->json($user, 200);
     }
 
-    // Delete a user
+    // Soft delete a user
     public function destroy($id)
     {
         $user = User::find($id);
@@ -76,6 +78,32 @@ class UserController extends Controller
 
         $user->delete();
 
-        return response()->json(['message' => 'User deleted successfully'], 200);
+        return response()->json(['message' => 'User soft deleted successfully'], 200);
+    }
+
+    //Restore the soft-deleted user
+    public function restore($id)
+    {
+        $user = User::withTrashed()->find($id);
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        $user->restore();
+
+        return response()->json(['message' => 'User restored'], 200);
+    }
+
+    // Permanently delete a user
+    public function forceDelete($id)
+    {
+        $user = User::withTrashed()->find($id);
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        $user->forceDelete();
+
+        return response()->json(['message' => 'User permanently deleted'], 200);
     }
 }

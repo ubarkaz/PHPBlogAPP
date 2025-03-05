@@ -66,7 +66,7 @@ class CommentController extends Controller
         return response()->json($comment, 200);
     }
 
-    // Delete a comment
+    // Soft - delete a comment
     public function destroy($id)
     {
         $comment = Comment::find($id);
@@ -76,6 +76,33 @@ class CommentController extends Controller
 
         $comment->delete();
 
-        return response()->json(['message' => 'Comment deleted successfully'], 200);
+        return response()->json(['message' => 'Comment soft -  deleted successfully'], 200);
+    }
+
+    //Restore the soft-deleted comment
+    public function restore($id)
+    {
+        $comment = Comment::withTrashed()->find($id);
+        if (!$comment) {
+            return response()->json(['message' => 'Comment not found'], 404);
+        }
+
+        $comment->restore();
+
+        return response()->json(['message' => 'Comment restored'], 200);
+    }
+
+    // Permanently delete a user
+    public function forceDelete($id)
+    {
+        $comment = Comment::withTrashed()->find($id);
+        if (!$comment) {
+            return response()->json(['message' => 'Comment not found'], 404);
+        }
+
+        $comment->forceDelete();
+
+        return response()->json(['message' => 'Comment permanently deleted'], 200);
     }
 }
+

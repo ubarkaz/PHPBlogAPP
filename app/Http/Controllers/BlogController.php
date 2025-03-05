@@ -55,7 +55,7 @@ class BlogController extends Controller
         return response()->json($blog, 200);
     }
 
-    // Delete a blog
+    //Soft - delete a blog
     public function destroy($id)
     {
         $blog = Blog::find($id);
@@ -65,6 +65,32 @@ class BlogController extends Controller
 
         $blog->delete();
 
-        return response()->json(['message' => 'Blog deleted successfully'], 200);
+        return response()->json(['message' => 'Blog soft deleted successfully'], 200);
+    }
+
+    //Restore the soft-deleted user
+    public function restore($id)
+    {
+        $blog = Blog::withTrashed()->find($id);
+        if (!$blog) {
+            return response()->json(['message' => 'Blog not found'], 404);
+        }
+
+        $blog->restore();
+
+        return response()->json(['message' => 'Blog restored'], 200);
+    }
+
+    // Permanently delete a user
+    public function forceDelete($id)
+    {
+        $blog = Blog::withTrashed()->find($id);
+        if (!$blog) {
+            return response()->json(['message' => 'Blog not found'], 404);
+        }
+
+        $blog->forceDelete();
+
+        return response()->json(['message' => 'Blog permanently deleted'], 200);
     }
 }
