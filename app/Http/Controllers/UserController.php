@@ -20,6 +20,14 @@ class UserController extends Controller
     // Create a new user
     public function store(Request $request)
     {
+        // Check if email already exists in the database
+        $existingUser = User::where('email', $request->email)->first();
+        if ($existingUser) {
+            return response()->json([
+                'message' => 'User with this email already exists.',
+            ], 409);  // Conflict HTTP status
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
@@ -51,6 +59,13 @@ class UserController extends Controller
         $user = User::find($id);
         if (!$user) {
             return response()->json(['message' => 'User not found'], 404);
+        }
+
+        // Check if email already exists (for update scenario)
+        if ($request->has('email') && User::where('email', $request->email)->where('id', '!=', $id)->exists()) {
+            return response()->json([
+                'message' => 'User with this email already exists.',
+            ], 409);  // Conflict HTTP status
         }
 
         $request->validate([
