@@ -3,15 +3,27 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\RegisteredUserController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Gate;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
 Route::get('/dashboard', function () {
+    // Check if the user is allowed to access the dashboard
+    if (!Gate::denies('access-dashboard')) {
+        abort(403, 'You are not allowed to access this page'); // Show 403 error if the user is not allowed
+    }
     return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth'])->name('dashboard');
+
+//test route to check if my admin email is printed
+Route::get('/debug-user', function () {
+    return auth()->user()->email;
+});
+
 
 // Authentication Routes (Manual Login & Registration)
 Route::get('/manual-register', [RegisterController::class, 'showRegistrationForm'])->name('register');

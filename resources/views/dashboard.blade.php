@@ -10,6 +10,12 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     {{ __("You're logged in!") }}
+
+                    @can('view-dashboard')
+                        <p class="mt-4 text-green-600">Welcome, Admin! You have full access.</p>
+                    @else
+                        <p class="mt-4 text-red-600">You do not have permission to access admin features.</p>
+                    @endcan
                 </div>
             </div>
         </div>
