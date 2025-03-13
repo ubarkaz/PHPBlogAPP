@@ -4,6 +4,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CommentController;
 use Illuminate\Support\Facades\Route;
+use App\Htttp\Controllers\Auth\RegisteredUserController;
 
 Route::apiResource('users', UserController::class);
 Route::apiResource('blogs', BlogController::class);
@@ -19,3 +20,6 @@ Route::patch('comments/{id}/restore', [CommentController::class, 'restore']);
 Route::delete('users/{id}/force-delete', [UserController::class, 'forceDelete']);
 Route::delete('blogs/{id}/force-delete', [BlogController::class, 'forceDelete']);
 Route::delete('comments/{id}/force-delete', [CommentController::class, 'forceDelete']);
+
+Route::post('/login', [AuthController::class, 'login']);
+Route::middleware('auth:sanctum')->post('/logout', [RegisteredUserController::class, 'logout']);

@@ -14,7 +14,7 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     // Check if the user is allowed to access the dashboard
     if (!Gate::denies('access-dashboard')) {
-        abort(403, 'You are not allowed to access this page'); // Show 403 error if the user is not allowed
+        abort(403, 'You are not allowed to access this'); // Show 403 error if the user is not allowed
     }
     return view('dashboard');
 })->middleware(['auth'])->name('dashboard');

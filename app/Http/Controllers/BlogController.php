@@ -16,15 +16,29 @@ class BlogController extends Controller
     // Create a new blog
     public function store(Request $request)
     {
+        
         $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'user_id' => 'required|exists:users,id',
-        ]);
+        'title' => 'required|string|max:255',
+        'content' => 'required|string',
+        'user_id' => 'required|exists:users,id',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:51200', // Validate image
+    ]);
 
-        $blog = Blog::create($request->all());
+        // Handle file upload
+        if ($request->hasFile('image')) {
+        $imagePath = $request->file('image')->store('blog_images', 'public');
+        }   else {
+            $imagePath = null;
+        }
 
-        return response()->json($blog, 201);
+        $blog = Blog::create([
+        'title' => $request->title,
+        'content' => $request->content,
+        'user_id' => $request->user_id,
+        'image' => $imagePath, // Store image path in DB
+    ]);
+
+    return response()->json($blog, 201);
     }
 
     // Get a specific blog
@@ -32,8 +46,12 @@ class BlogController extends Controller
     {
         $blog = Blog::with('user')->find($id);
         if (!$blog) {
-            return response()->json(['message' => 'Blog not found'], 404);
+        return response()->json(['message' => 'Blog not found'], 404);
         }
+
+        // Add full image URL
+        $blog->image = $blog->image ? asset('storage/' . $blog->image) : null;
+
         return response()->json($blog, 200);
     }
 
@@ -48,25 +66,46 @@ class BlogController extends Controller
         $request->validate([
             'title' => 'sometimes|string|max:255',
             'content' => 'sometimes|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:51200',
         ]);
 
-        $blog->update($request->all());
+        $data = $request->all();
 
-        return response()->json($blog, 200);
+        // Handle new image upload
+        if ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($blog->image) {
+                Storage::disk('public')->delete($blog->image);
+            }
+
+            $imagePath = $request->file('image')->store('blog_images', 'public');
+            $data['image'] = $imagePath;
+        }
+
+        $blog->update($data); 
+
+        return response()->json(['message' => 'Blog updated successfully', 'blog' => $blog], 200);
     }
 
-    //Soft - delete a blog
+
+    //soft - delete a blog  
     public function destroy($id)
-    {
+    {   
         $blog = Blog::find($id);
-        if (!$blog) {
+            if (!$blog) {
             return response()->json(['message' => 'Blog not found'], 404);
+        }
+
+            // Delete image from storage
+            if ($blog->image) {
+            \Storage::disk('public')->delete($blog->image);
         }
 
         $blog->delete();
 
-        return response()->json(['message' => 'Blog soft deleted successfully'], 200);
+        return response()->json(['message' => 'Blog soft - deleted successfully'], 200);
     }
+
 
     //Restore the soft-deleted user
     public function restore($id)

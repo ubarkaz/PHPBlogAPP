@@ -8,13 +8,14 @@ use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any authentication / authorization services.
-     */
+    protected $policies = [
+        Blog::class => BlogPolicy::class,
+    ];
+
     public function boot(): void
     {
         $this->registerPolicies();
-        Gate::define('access-dashboard', function (?User $user) {
+        Gate::define('access-dashboard', function (User $user) {
             return $user->email === 'kasoziubar97@gmail.com'; 
         });
     }
