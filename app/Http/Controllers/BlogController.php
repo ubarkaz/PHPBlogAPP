@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Blog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class BlogController extends Controller
 {
@@ -15,30 +16,26 @@ class BlogController extends Controller
 
     // Create a new blog
     public function store(Request $request)
-    {
-        
+    {     
         $request->validate([
         'title' => 'required|string|max:255',
         'content' => 'required|string',
         'user_id' => 'required|exists:users,id',
-        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:51200', // Validate image
+        'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf,mp4,mov,avi|max:102400', // 100MB max
     ]);
+
+        $data = $request->except('image');
 
         // Handle file upload
         if ($request->hasFile('image')) {
-        $imagePath = $request->file('image')->store('blog_images', 'public');
-        }   else {
-            $imagePath = null;
-        }
+        $path = $request->file('image')->store('uploads', 's3'); // Store in S3
+        $url = Storage::disk('s3')->url($path); // Get public URL
+        $data['image'] = $url; // Store URL in database
+    }
 
-        $blog = Blog::create([
-        'title' => $request->title,
-        'content' => $request->content,
-        'user_id' => $request->user_id,
-        'image' => $imagePath, // Store image path in DB
-    ]);
+        $blog = Blog::create($data);
 
-    return response()->json($blog, 201);
+        return response()->json(['message' => 'Blog created successfully', 'blog' => $blog], 201);
     }
 
     // Get a specific blog
@@ -62,52 +59,51 @@ class BlogController extends Controller
         if (!$blog) {
             return response()->json(['message' => 'Blog not found'], 404);
         }
-
+    
         $request->validate([
             'title' => 'sometimes|string|max:255',
             'content' => 'sometimes|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:51200',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validate image
         ]);
-
-        $data = $request->all();
-
+    
+        $data = $request->only(['title', 'content']); // Get fields that can be updated
+    
         // Handle new image upload
         if ($request->hasFile('image')) {
-            // Delete old image if exists
+            // Delete old image if it exists
             if ($blog->image) {
                 Storage::disk('public')->delete($blog->image);
             }
-
+    
+            // Store new image in `storage/app/public/blog_images`
             $imagePath = $request->file('image')->store('blog_images', 'public');
-            $data['image'] = $imagePath;
+            $data['image'] = $imagePath; // Update image path
         }
-
-        $blog->update($data); 
-
-        return response()->json(['message' => 'Blog updated successfully', 'blog' => $blog], 200);
+    
+        // Update the blog with new data
+        $blog->update($data);
+    
+        return response()->json([
+            'message' => 'Blog updated successfully',
+            'blog' => $blog
+        ], 200);
     }
 
-
-    //soft - delete a blog  
-    public function destroy($id)
-    {   
-        $blog = Blog::find($id);
-            if (!$blog) {
-            return response()->json(['message' => 'Blog not found'], 404);
-        }
-
-            // Delete image from storage
-            if ($blog->image) {
-            \Storage::disk('public')->delete($blog->image);
-        }
-
-        $blog->delete();
-
-        return response()->json(['message' => 'Blog soft - deleted successfully'], 200);
-    }
+     // Soft - delete a blog
+     public function destroy($id)
+     {
+         $blog = Blog::find($id);
+         if (!$blog) {
+             return response()->json(['message' => 'Blog not found'], 404);
+         }
+ 
+         $blog->delete();
+ 
+         return response()->json(['message' => 'Blogsoft - deleted successfully'], 200);
+     }
 
 
-    //Restore the soft-deleted user
+    //Restore the soft-deleted blog
     public function restore($id)
     {
         $blog = Blog::withTrashed()->find($id);
@@ -120,7 +116,7 @@ class BlogController extends Controller
         return response()->json(['message' => 'Blog restored'], 200);
     }
 
-    // Permanently delete a user
+    // Permanently delete a blog
     public function forceDelete($id)
     {
         $blog = Blog::withTrashed()->find($id);
