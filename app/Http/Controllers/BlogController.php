@@ -11,43 +11,45 @@ class BlogController extends Controller
     // Get all blogs
     public function index()
     {
-        return response()->json(Blog::with('user')->get(), 200);
+        $blogs = Blog::with(['user', 'media'])->get(); 
+
+        return response()->json([
+            'message' => 'All blogs retrieved successfully',
+            'blogs' => $blogs,
+        ], 200);
     }
 
-    // Create a new blog
+    // Create a new blog using Spatie Media Library
     public function store(Request $request)
     {     
         $request->validate([
-        'title' => 'required|string|max:255',
-        'content' => 'required|string',
-        'user_id' => 'required|exists:users,id',
-        'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf,mp4,mov,avi|max:102400', // 100MB max
-    ]);
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
+            'user_id' => 'required|exists:users,id',
+            'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf,mp4,mov,avi|max:102400', // 100MB max
+        ]);
 
-        $data = $request->except('image');
+        $blog = Blog::create($request->only(['title', 'content', 'user_id']));
 
-        // Handle file upload
+        // Handle file upload with Spatie
         if ($request->hasFile('image')) {
-        $path = $request->file('image')->store('uploads', 's3'); // Store in S3
-        $url = Storage::disk('s3')->url($path); // Get public URL
-        $data['image'] = $url; // Store URL in database
-    }
+            $blog->addMedia($request->file('image'))
+                 ->toMediaCollection('uploads', 's3'); // Store in S3
+        }
 
-        $blog = Blog::create($data);
-
-        return response()->json(['message' => 'Blog created successfully', 'blog' => $blog], 201);
+        return response()->json([
+            'message' => 'Blog created successfully',
+            'blog' => $blog->load('media'), // Load media relationships
+        ], 201);
     }
 
     // Get a specific blog
     public function show($id)
     {
-        $blog = Blog::with('user')->find($id);
+        $blog = Blog::with(['user', 'media'])->find($id);
         if (!$blog) {
-        return response()->json(['message' => 'Blog not found'], 404);
+            return response()->json(['message' => 'Blog not found'], 404);
         }
-
-        // Add full image URL
-        $blog->image = $blog->image ? asset('storage/' . $blog->image) : null;
 
         return response()->json($blog, 200);
     }
