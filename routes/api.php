@@ -5,6 +5,9 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CommentController;
 use Illuminate\Support\Facades\Route;
 use App\Htttp\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\BlogOrionController;
+use Orion\Facades\Orion;
+
 
 Route::apiResource('users', UserController::class);
 Route::apiResource('blogs', BlogController::class);
@@ -23,3 +26,6 @@ Route::delete('comments/{id}/force-delete', [CommentController::class, 'forceDel
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->post('/logout', [RegisteredUserController::class, 'logout']);
+
+//Orion routes
+Orion::resource('blogs-orion', BlogOrionController::class);
