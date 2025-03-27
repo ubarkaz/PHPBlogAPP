@@ -12,7 +12,7 @@ class Blog extends Model implements HasMedia
 {
     use HasFactory, SoftDeletes, InteractsWithMedia;
 
-    protected $fillable = ['title', 'content', 'user_id']; // Removed 'image' since media library will handle it
+    protected $fillable = ['title', 'content', 'user_id']; // i removed 'image' since media library will handle it
     protected $dates = ['deleted_at'];
 
     public function user()

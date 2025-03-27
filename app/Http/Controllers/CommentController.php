@@ -76,7 +76,7 @@ class CommentController extends Controller
 
         $comment->delete();
 
-        return response()->json(['message' => 'Comment soft -  deleted successfully'], 200);
+        return response()->json(['message' => 'Comment soft - deleted successfully'], 200);
     }
 
     //Restore the soft-deleted comment
