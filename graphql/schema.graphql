@@ -1,0 +1,38 @@
+type Blog {
+    id: ID!
+    title: String!
+    content: String!
+    user: User! @belongsTo
+    comments: [Comment!]! @morphMany
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type User {
+    id: ID!
+    name: String!
+    email: String!
+    blogs: [Blog!]! @hasMany
+}
+
+type Comment {
+    id: ID!
+    content: String!
+    user: User! @belongsTo
+    commentable: Commentable! @morphTo
+}
+
+interface Commentable {
+    id: ID!
+}
+
+extend type Query {
+    blogs: [Blog!]! @all
+    blog(id: ID!): Blog @find
+}
+
+extend type Mutation {
+    createBlog(title: String!, content: String!): Blog @create
+    updateBlog(id: ID!, title: String, content: String): Blog @update
+    deleteBlog(id: ID!): Blog @delete
+}
