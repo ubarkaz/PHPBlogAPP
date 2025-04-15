@@ -13,6 +13,12 @@ Route::apiResource('users', UserController::class);
 Route::apiResource('blogs', BlogController::class);
 Route::apiResource('comments', CommentController::class);
 
+//ThrottleRequests middleware to limit user creation to 1 every minute as a test case
+//Route::middleware(['throttle:1,1'])->post('/users', [UserController::class, 'store']);
+
+Route::middleware(['throttle:user-create'])->post('/users', [UserController::class, 'store']);
+
+
 //Restore routes for soft deleted records
 Route::patch('users/{id}/restore', [UserController::class, 'restore']);
 Route::patch('blogs/{id}/restore', [BlogController::class, 'restore']);

@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Gate;
+use Vizir\KeycloakWebGuard\Controllers\UserController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -23,7 +24,6 @@ Route::get('/dashboard', function () {
 Route::get('/debug-user', function () {
     return auth()->user()->email;
 });
-
 
 // Authentication Routes (Manual Login & Registration)
 Route::get('/manual-register', [RegisterController::class, 'showRegistrationForm'])->name('register');
