@@ -44,3 +44,6 @@ Route::middleware('auth')->group(function () {
 // Keep Laravel Breeze Auth Routes
 require __DIR__.'/auth.php';
 
+
+
+

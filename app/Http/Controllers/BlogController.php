@@ -28,7 +28,7 @@ class BlogController extends Controller
             'user_id' => 'required|exists:users,id',
             'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf,mp4,mov,avi|max:102400', // 100MB max
         ]);
-
+ 
         $blog = Blog::create($request->only(['title', 'content', 'user_id']));
 
         // Handle file upload with Spatie

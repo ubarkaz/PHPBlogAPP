@@ -16,6 +16,7 @@ Route::apiResource('comments', CommentController::class);
 //ThrottleRequests middleware to limit user creation to 1 every minute as a test case
 //Route::middleware(['throttle:1,1'])->post('/users', [UserController::class, 'store']);
 
+//Using Custom Rate Limiter
 Route::middleware(['throttle:user-create'])->post('/users', [UserController::class, 'store']);
 
 
@@ -35,3 +36,7 @@ Route::middleware('auth:sanctum')->post('/logout', [RegisteredUserController::cl
 
 //Orion routes
 Orion::resource('blogs-orion', BlogOrionController::class);
+
+Route::get('/debug-sentry', function () {
+    throw new Exception('Test Sentry error!');
+});
